@@ -1,0 +1,139 @@
+---
+title: "bike-sharing-project"
+author: "Kehan Liu"
+date: "13/04/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(knitr)
+
+options(scipen = 999)
+
+d_bikesharing <- read_csv('../Bike-Sharing-Dataset/day.csv')
+str(d_bikesharing)
+```
+
+```{r}
+d_bikesharing %>%
+  group_by(weathersit) %>%
+  summarise(
+    n = n(),
+    mean_temp = mean(temp, na.rm = TRUE) %>% round(digits = 2),
+    mean_hum = mean(hum, na.rm = TRUE) %>% round(digits = 2),
+    mean_windspeed = mean(windspeed, na.rm = TRUE) %>% round(digits = 2),
+    mean_casual = mean(casual, na.rm = TRUE) %>% round(),
+    mean_registered = mean(registered, na.rm = TRUE) %>% round()
+  ) %>%
+  mutate(
+    cas_vs_reg = round(mean_casual / mean_registered, digits = 2)
+  )
+
+
+```
+
+```{r}
+d_bikesharing %>%
+  ggplot(aes(x = weathersit, y = casual)) +
+  geom_jitter(alpha = 0.5)
+
+d_bikesharing %>%
+  ggplot(aes(x = weathersit, y = registered)) +
+  geom_jitter(alpha = 0.5)
+```
+
+```{r}
+wea_cas <- d_bikesharing %>%
+  mutate(weathersit = weathersit %>% as.factor) %>%
+  ggplot(aes(x = weathersit, y = casual)) +
+  geom_boxplot()
+
+wea_reg <- d_bikesharing %>%
+  mutate(weathersit = weathersit %>% as.factor) %>%
+  ggplot(aes(x = weathersit, y = registered)) +
+  geom_boxplot()
+
+gridExtra::grid.arrange(wea_cas, wea_reg, ncol =2)
+```
+
+```{r}
+temp_cas <- d_bikesharing %>%
+  ggplot(aes(x = temp, y = casual)) +
+  geom_point(alpha = 0.5)
+
+temp_reg <- d_bikesharing %>%
+  ggplot(aes(x = temp, y = registered)) +
+  geom_point(alpha = 0.5)
+
+gridExtra::grid.arrange(temp_cas, temp_reg, ncol =2)
+```
+
+```{r}
+hum_cas <- d_bikesharing %>%
+  ggplot(aes(x = hum, y = casual)) +
+  geom_point(alpha = 0.5)
+
+hum_reg <- d_bikesharing %>%
+  ggplot(aes(x = hum, y = registered)) +
+  geom_point(alpha = 0.5)
+
+gridExtra::grid.arrange(hum_cas, hum_reg, ncol =2)
+```
+```{r}
+ws_cas <- d_bikesharing %>%
+  ggplot(aes(x = windspeed, y = casual)) +
+  geom_point(alpha = 0.5)
+
+ws_reg <- d_bikesharing %>%
+  ggplot(aes(x = windspeed, y = registered)) +
+  geom_point(alpha = 0.5)
+
+gridExtra::grid.arrange(ws_cas, ws_reg, ncol =2)
+```
+
+```{r}
+d_bikesharing %>%
+  group_by(workingday) %>%
+  summarise(
+    n = n(),
+    mean_casual = mean(casual, na.rm = TRUE) %>% round(),
+    mean_registered = mean(registered, na.rm = TRUE) %>% round()
+  ) %>%
+  mutate(
+    cas_vs_reg = round(mean_casual / mean_registered, digits = 2)
+  )
+
+
+```
+```{r}
+wd_cas <- d_bikesharing %>%
+  mutate(workingday = workingday %>% as.factor) %>%
+  ggplot(aes(x = workingday, y = casual)) +
+  geom_boxplot()
+
+wd_reg <- d_bikesharing %>%
+  mutate(workingday = workingday %>% as.factor) %>%
+  ggplot(aes(x = workingday, y = registered)) +
+  geom_boxplot()
+
+gridExtra::grid.arrange(wd_cas, wd_reg, ncol =2)
+
+
+```
+
+```{r}
+d_bikesharing %>%
+  lm(casual ~ workingday + weathersit + temp + hum + windspeed, data = .) %>%
+  summary
+
+d_bikesharing %>%
+  lm(registered ~ workingday + weathersit + temp + hum + windspeed, data = .) %>%
+  summary
+```
+
+
